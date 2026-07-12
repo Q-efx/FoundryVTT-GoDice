@@ -17,7 +17,7 @@ export default class Chat{
     const message = {
       speaker: ChatMessage.getSpeaker({ actor: this.actor }),
       content: `<i class="fas ${input.dataset.icon} fa-spin"></i> Rolling ${shell}...`,
-      type: CONST.CHAT_MESSAGE_TYPES.ROLL,
+      style: CONST.CHAT_MESSAGE_STYLES.OTHER,
     };
 
     ChatMessage.create(message).then((createdChatMessage) => {
