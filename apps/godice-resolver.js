@@ -62,12 +62,18 @@ export default class GodiceResolver extends foundry.applications.dice.RollResolv
     for ( let [id, results] of Object.entries(formData.object) ) {
       const { term } = this.fulfillable.get(id);
       if ( !Array.isArray(results) ) results = [results];
-      for ( let i = 0; i < results.length; i++ ) {
+      // Feed each fulfilled value through the term's own roll() rather than writing
+      // term.results directly, so DiceTerm subclasses (e.g. Wrath & Glory PoolDie/WrathDie)
+      // compute their derived per-result data (value, name, img). A null value falls back
+      // to the digital roll.
+      for ( let i = term.results.length; i < results.length; i++ ) {
         const result = results[i];
-        const roll = term.results[i] ??= { result: undefined, active: true };
-        if ( roll.result === undefined ) {
-          if ( result === null ) roll.result = term.randomFace();
-          else roll.result = result;
+        const originalRoll = term._roll;
+        term._roll = async () => (result === null ? undefined : result);
+        try {
+          await term.roll();
+        } finally {
+          term._roll = originalRoll;
         }
       }
     }
